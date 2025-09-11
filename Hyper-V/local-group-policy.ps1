@@ -56,7 +56,7 @@ foreach ($e in $entries) {
 }
 
 # Vérification et création de l’entrée spécifique:
-$serverName = 'SRVHYPERV'
+$serverName = 'SRVHYPERV.local'
 
 $subKey = "{0}\{1}" -f $registryKey, $entry_1
 
