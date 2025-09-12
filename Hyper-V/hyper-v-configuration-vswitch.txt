@@ -1,0 +1,92 @@
+🧭 Étape 1 : Préparation de l’hôte Hyper-V
+🔹 Objectifs :
+Vérifier le support VLAN
+Créer un commutateur virtuel externe
+Activer le tagging VLAN pour l’OS hôte
+Attribuer une IP Statique de gestion pour le VLAN 10 (MGMT)
+
+
+🛠️ Commandes PowerShell :
+Get-NetAdapterAdvancedProperty -Name "Ethernet" | Where-Object DisplayName -Match "VLAN" | Format-List
+New-VMSwitch -Name <...> -NetAdapterName "Ethernet" -AllowManagementOS $true
+New-NetIPAddress -InterfaceAlias "vEthernet" -IPAddress 192.168.1.10 -PrefixLength 24
+
+# Identification des VLANs (Seulement si le routage le permet):
+Set-VMNetworkAdapterVlan -ManagementOS -Access -VlanId 10
+
+# Suppression de l’IP statique assignée à l’interface physique:
+$if = Get-NetAdapter | Where-Object { $_.Name -eq "Ethernet" }
+Remove-NetIPAddress -InterfaceIndex $if.InterfaceIndex -AddressFamily IPv4 -Confirm:$false
+
+🧭 Étape 1 bis: Création d’une VM Windows Server avec le role "Routing and Remote Access Service - RRAS":
+Voir script   	
+
+
+
+🧭 Étape 2 : Création des VM segmentées par rôle
+🔹 VM à créer :
+Nom	Rôle	VLAN	IP prévue
+DC1	Contrôleur de domaine	20	10.10.20.10
+DC2	Réplica AD	20	10.10.20.11
+FS1	Serveur de fichiers	30	10.10.30.10
+APP1	Serveur applicatif/test	40	10.10.40.10
+
+🛠️ Script PowerShell (extrait pour DC1) :
+powershell
+New-VM -Name "DC1" -MemoryStartupBytes 4GB -Generation 2 -SwitchName "ReskitSwitch" -Path "D:\VMs\DC1"
+Set-VMNetworkAdapterVlan -VMName "DC1" -Access -VlanId 20
+Add-VMHardDiskDrive -VMName "DC1" -Path "D:\VMs\DC1\DC1.vhdx"
+Start-VM -Name "DC1"
+➡️ Répète pour chaque VM avec le VLAN correspondant.
+
+🧭 Étape 3 : Configuration réseau interne
+🔹 Objectifs :
+Assigner IP statiques aux VM
+
+Vérifier la communication intra-VLAN
+
+Promouvoir DC1 en AD/DNS
+
+🛠️ À faire dans les VM :
+Configurer IP fixe dans chaque VM
+
+Ping entre DC1 et DC2
+
+Installer AD DS sur DC1 (Install-WindowsFeature AD-Domain-Services)
+
+Promouvoir DC1 (Install-ADDSForest)
+
+🧭 Étape 4 : Routage inter-VLAN (optionnel)
+🔹 Choix :
+VM pfSense (ISO) avec plusieurs interfaces VLAN
+
+VM Windows Server avec rôle RRAS
+
+🛠️ pfSense :
+Créer une VM avec 3 ou 4 cartes réseau
+
+Assigner chaque carte à un VLAN
+
+Activer le routage et le NAT
+
+🛠️ RRAS :
+powershell
+Install-WindowsFeature RemoteAccess -IncludeManagementTools
+Install-WindowsFeature Routing
+➡️ Configure les interfaces et les routes manuellement ou via netsh.
+
+🧭 Étape 5 : Accès Internet pour les VM
+Le VLAN 10 (gestion) a déjà accès via ta box
+
+Les autres VLANs passent par pfSense/RRAS
+
+Tu peux créer une règle NAT ou une passerelle vers 192.168.1.1
+
+🧠 Tu veux aller plus loin ?
+Ajouter DHCP par VLAN (via pfSense ou DC1)
+
+Intégrer WSUS, MDT, ou un serveur de sauvegarde
+
+Simuler des attaques ou tests de sécurité (lab Red/Blue Team)
+
+Je peux te générer un script complet de création des VM avec VLANs, ou t’aider à installer pfSense étape par étape. Tu préfères qu’on commence par le script VM ou le routeur virtuel ?

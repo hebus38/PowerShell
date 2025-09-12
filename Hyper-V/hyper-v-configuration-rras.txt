@@ -1,0 +1,53 @@
+# === PARAMÈTRES DE BASE ===
+$VMName       = "RRAS"
+$VMSwitch     = "EXT-vSwitch"
+$VMPath       = "D:\VMs\$VMName"
+$VHDPath      = "$VMPath\$VMName.vhdx"
+$ISOPath      = "D:\ISOs\WinServer.iso"
+$MemoryStartup= 2GB
+$VHDSize      = 40GB
+$VlanList     = @(10, 20, 30)
+
+# === SPLATTING POUR New-VM ===
+$vmParams = @{
+    Name              = $VMName
+    MemoryStartupBytes= $MemoryStartup
+    Generation        = 2
+    SwitchName        = $VMSwitch
+    Path              = $VMPath
+}
+
+New-VM @vmParams
+
+# === SPLATTING POUR New-VHD ===
+$vhdParams = @{
+    Path      = $VHDPath
+    SizeBytes = $VHDSize
+    Dynamic   = $true
+}
+
+New-VHD @vhdParams
+
+# === AJOUT DU DISQUE ET ISO ===
+Add-VMHardDiskDrive -VMName $VMName -Path $VHDPath
+Add-VMDvdDrive       -VMName $VMName -Path $ISOPath
+Set-VMFirmware       -VMName $VMName -EnableSecureBoot Off
+
+# === AJOUT DES INTERFACES VLAN ===
+foreach ($vlan in $VlanList) {
+    $nicName = "NIC-VLAN$vlan"
+    Add-VMNetworkAdapter -VMName $VMName -Name $nicName
+
+    $vlanParams = @{
+        VMName             = $VMName
+        VMNetworkAdapterName = $nicName
+        Access             = $true
+        VlanId             = $vlan
+    }
+
+    Set-VMNetworkAdapterVlan @vlanParams
+}
+
+# === DÉMARRAGE DE LA VM ===
+Start-VM -Name $VMName
+Write-Host "🚀 VM '$VMName' créée avec interfaces VLAN $($VlanList -join ', ')"

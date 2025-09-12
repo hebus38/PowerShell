@@ -1,0 +1,74 @@
+Get-WinEvent @{logname="Microsoft-Windows-Hyper-V*","Microsft-Windows-SMBClient*"} -ErrorAction Ignore |
+select TimeCreated, LogNAme, Id, LevelDisplayName, ProviderName, Message, MachineName, UserId | 
+Export-Csv -Path "c:\temp\$env:computername-hyperv.csv" -NoTypeInformation 
+
+===
+
+# Variables dynamiques
+$computer = $env:computername
+$date = Get-Date -Format "yyyyMMdd"
+$path = "C:\Temp\{0}-hyperv-{1}.csv" -f $computer, $date
+
+# Liste des journaux ciblés
+#$logs = @( "Microsoft-Windows-Hyper-V*")
+$logs = @(
+    "Microsoft-Windows-Hyper-V-Client/Admin",
+    "Microsoft-Windows-WinRM/Operational",
+    "Microsoft-Windows-CredSSP/Operational",
+    "Microsoft-Windows-PowerShell/Operational",
+    "System",
+    "Security"
+)
+
+$filter = @{
+	LogName = $logs 
+	StartTime = (Get-Date).AddDays(-1)
+	Level = 2
+}
+
+# Selection des attributs:
+$objects = @(
+    "TimeCreated",
+    "LogName",
+    "Id",
+    "LevelDisplayName",
+    "ProviderName",
+    "Message",
+    "MachineName",
+    "UserId"
+)
+   
+# Récupération des événements
+Get-WinEvent -FilterHashtable $filter -ErrorAction Ignore |
+Select-Object $objects |
+Export-Csv -Path $path -NoTypeInformation
+
+# Confirmation
+Write-Host "`n Export terminé: $path" -ForegroundColor Green
+
+$excel = New-Object -ComObject Excel.Application
+$excel.Visible = $true
+$workbook = $excel.Workbooks.Open("$path")
+===
+
+To collect all the Hyper-V logs from yesterday, run the following script:
+Get-WinEvent -FilterHashTable @{LogName ="Microsoft-Windows-Hyper-V*"; StartTime =(Get-Date).AddDays(-1)} 
+
+To collect only the warnings from yesterday, run the following script:
+Get-WinEvent -FilterHashTable @{LogName ="Microsoft-Windows-Hyper-V*"; StartTime =(Get-Date).AddDays(-1); Level = 3}
+
+To collect only the error messages from yesterday, run the following script:
+Get-WinEvent -FilterHashTable @{LogName ="Microsoft-Windows-Hyper-V*"; StartTime =(Get-Date).AddDays(-1); Level = 2}
+
+To collect the hyper-V logs and output to a folder, run the following script:
+Get-WinEvent -FilterHashTable @{LogName ="Microsoft-Windows-Hyper-V*"; StartTime = (Get-Date).AddDays(-1)} -ErrorAction Ignore|Export-Csv -Path "c:\temp\$env:com
+
+***
+Liens:
+https://techcommunity.microsoft.com/blog/virtualization/looking-at-the-hyper-v-event-log-january-2018-edition/382411
+
+
+
+
+
+

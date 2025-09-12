@@ -1,0 +1,12 @@
+# Session étendue NON disponible #
+  - Plein écran
+	Éditer le fichier /etc/default/grub
+	Modifier la variable GRUB_CMDLINE_LINUX_DEFAULT
+		-> ajouter "video=hyperv_fb:1920x1080"
+			- /!\ vérifier la résolution
+				ex: VGA en 1440x900
+
+VMConnect
+
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+bcdedit /set hypervisorlaunchtype auto
