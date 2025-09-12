@@ -1,34 +1,75 @@
 <#
-.SYNOPSIS
-  Crée une machine virtuelle sur un hôte Hyper-V distant et prépare son installation en tant que contrôleur de domaine.
+  .SYNOPSIS
+    Crée une machine virtuelle sur un hôte Hyper-V distant et prépare son installation en tant que contrôleur de domaine.
 
-.DESCRIPTION
-  Ce script PowerShell utilise le splatting pour créer une VM sur un hôte Hyper-V distant, copier un disque VHDX de référence,
-  injecter un fichier Unattend.xml, et démarrer la VM. Il est conçu pour automatiser le déploiement d’un contrôleur de domaine
-  dans un environnement Workgroup ou lab.
+  .DESCRIPTION
+    Ce script PowerShell utilise le splatting pour créer une VM sur un hôte Hyper-V distant, copier un disque VHDX de référence,
+    injecter un fichier Unattend.xml, et démarrer la VM. Il est conçu pour automatiser le déploiement d’un contrôleur de domaine
+    dans un environnement Workgroup ou lab.
 
-  Le script doit être exécuté avec des droits administrateur et nécessite que les partages réseau soient accessibles depuis la machine locale.
+    Le script doit être exécuté avec des droits administrateur et nécessite que les partages réseau soient accessibles depuis la machine locale.
 
-.LINK
-  https://github.com/doctordns/ReskitBuildScripts
-  https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_splatting?view=powershell-7.5
-  https://learn.microsoft.com/en-us/powershell/scripting/samples/working-with-registry-entries?view=powershell-7.5
+  .LINK
+    https://github.com/doctordns/ReskitBuildScripts
+    https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_splatting?view=powershell-7.5
+    https://learn.microsoft.com/en-us/powershell/scripting/samples/working-with-registry-entries?view=powershell-7.5
 
-.EXAMPLE
-  .\Create-DCVM.ps1
+  .EXAMPLE
+    .\Create-DCVM.ps1
 
-  Crée une VM nommée "DC1" sur l’hôte "SRVHYPERV", copie le VHDX de référence, injecte le fichier Unattend.xml,
-  et démarre la VM pour lancer l’installation automatisée du contrôleur de domaine.
-#>
+    Crée une VM nommée "DC1" sur l’hôte "SRVHYPERV", copie le VHDX de référence, injecte le fichier Unattend.xml,
+    et démarre la VM pour lancer l’installation automatisée du contrôleur de domaine.
+
+  .NOTES
+    Un dossier partagé (D:\VMs, D:\Reference, D:\Unattend)
+
+    Le fichier ISO de Windows Server monté dans un VHDX via New-ReferenceVHDX.ps1
+
+    Un fichier UnattendDC.xml adapté pour installer et promouvoir le serveur en tant que DC
+  #>
 
 # Paramètres principaux
-$VMName        = "DC1"
-$VMHost        = "SRVHYPERV"
+<#
+-Name $Name 
+-MemoryStartupBytes 4GB 
+-Generation 2 
+-Path "D:\Hyper-V" 
+-NewVHDPath "D:\Hyper-V\$Name\Virtual Hard Disks\$Name.vhdx" 
+-NewVHDSizeBytes 64GB 
+-SwitchName "LAN-Physique"
+*************************
+[[-Name] <String>]
+    [[-MemoryStartupBytes] <Int64>]
+    [[-Generation] <Int16>]
+    [-BootDevice <BootDevice>]
+    [-NoVHD]
+    [-SwitchName <String>]
+    [-Path <String>]
+    [-SourceGuestStatePath <String>]
+    [-Version <Version>]
+    [-Prerelease]
+    [-Experimental]
+    [-GuestStateIsolationType <GuestIsolationType>]
+    [-Force]
+    [-AsJob]
+    [-CimSession <CimSession[]>]
+    [-ComputerName <String[]>]
+    [-Credential <PSCredential[]>]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+#>
+$name = "DC1"
+$memoryStartupBytes = "4 GB"
+$generation = "2"
+$host        = "SRVHYPERV"
+$swith = "EXT-vSwitch"
+
 $VMPath        = "\\$VMHost\D$\VMs\$VMName"
 $VHDXTemplate  = "\\$VMHost\D$\Reference\WS2022.vhdx"
 $VHDXPath      = "$VMPath\$VMName.vhdx"
-$SwitchName    = "ReskitSwitch"
-$MemoryStartup = 4GB
+
+
 $UnattendFile  = "\\$VMHost\D$\Unattend\UnattendDC.xml"
 
 # Splatting pour la copie du VHDX

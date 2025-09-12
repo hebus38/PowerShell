@@ -11,17 +11,6 @@
   https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc781906(v=ws.10)
 #>
 
-$OutputEncoding = [System.Text.Encoding]::UTF8
-
-# Vérification des droits administrateur et relance si besoin
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "Ce script doit être exécuté en tant qu'administrateur."# Relance automatique..."
-    #$scriptPath = $MyInvocation.MyCommand.Path
-    #$arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
-    #Start-Process powershell -Verb RunAs -ArgumentList $arguments
-    exit
-}
-
 # Vérification et création de la clé principale:
 $registryKey = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation'
 $productKey = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows'

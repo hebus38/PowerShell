@@ -1,3 +1,10 @@
+<#
+
+
+https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/get-started/create-a-virtual-switch-for-hyper-v-virtual-machines?tabs=powershell&pivots=windows
+#>
+
+
 🧭 Étape 1 : Préparation de l’hôte Hyper-V
 🔹 Objectifs :
 Vérifier le support VLAN

@@ -37,7 +37,7 @@ gpedit.msc > Configuration de l’ordinateur > Modèles d’administration > Sys
 Délégation d’informations d’identification > 
 "Autoriser les nouvelles informations d’identification avec l’authentification du serveur NTLM uniquement"
 
-cli: Voir script "local-group-policy.ps1"
+cli: Voir script "hyper-v-winrm-credssp.ps1"
 
 
 Liens:
