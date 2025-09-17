@@ -1,29 +1,35 @@
 <#
-.SYNOPSIS
-  Configure la délégation d'identifiants pour Hyper-V via la stratégie locale.
-.DESCRIPTION
-  Ce script vérifie et crée/modifie les clés et valeurs nécessaires dans le registre pour permettre la 
-  délégation d'identifiants sur Hyper-V (WSMAN/NTLM). 
+  .SYNOPSIS
+  	Configure la délégation d'identifiants pour Hyper-V via la stratégie locale.
+
+  .DESCRIPTION
+  	Ce script vérifie et crée/modifie les clés et valeurs nécessaires dans le registre pour permettre la 
+  	délégation d'identifiants sur Hyper-V (WSMAN/NTLM). 
    
-  Il doit être exécuté en tant qu'administrateur local.
-.LINK
-  https://learn.microsoft.com/en-us/powershell/scripting/samples/working-with-registry-entries?view=powershell-7.5
-  https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc781906(v=ws.10)
-#>
-<#
-.TODO: Ajouter un hôte de confiance pour WinRM sans écraser les existants:
-$current = (Get-Item WSMan:\localhost\Client\TrustedHosts).Value
-$newHosts = "SRVCORE03,192.168.1.11"
+  	Il doit être exécuté en tant qu'administrateur local.
 
-if ($current -and $current -ne "*") {
-    $combined = "$current,$newHosts"
-} else {
-    $combined = $newHosts
-}
+  .LINK
+  	https://learn.microsoft.com/en-us/powershell/scripting/samples/working-with-registry-entries?view=powershell-7.5
+  	https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc781906(v=ws.10)
 
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value $combined
+  .NOTES
+  Auteur : Olivier BERTRAND
+  Date   : 09/2025
+  Version: 2.0
 
-.TODO: Ajouter fonctions
+  .TODO: Ajouter un hôte de confiance pour WinRM sans écraser les existants:
+	$current = (Get-Item WSMan:\localhost\Client\TrustedHosts).Value
+	$newHosts = "SRVCORE03,192.168.1.11"
+
+	if ($current -and $current -ne "*") {
+    	$combined = "$current,$newHosts"
+	} else {
+    	$combined = $newHosts
+	}
+
+	Set-Item WSMan:\localhost\Client\TrustedHosts -Value $combined
+
+  .TODO: Ajouter fonctions
 #>
 
 # Vérification et création de la clé principale:
@@ -60,7 +66,7 @@ foreach ($e in $entries) {
 }
 
 # Vérification et création de l’entrée spécifique:
-$serverName = 'ISCSI.local'
+$serverName = 'HYPERV.local'
 
 $subKey = "{0}\{1}" -f $registryKey, $entry_1
 
