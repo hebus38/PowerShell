@@ -1,3 +1,7 @@
+<#
+.LINK
+https://learn.microsoft.com/en-us/powershell/module/hyper-v/new-vm
+#>
 # Invoke-Command -FilePath ".\hyper-v-cluster-vm.ps1" -ComputerName "HYPERV" -Credential "HYPERV\Administrateur"
 
 param(

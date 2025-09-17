@@ -20,29 +20,6 @@ Write-Host "Mémoire utilisée : $([math]::Round($inUseMemory/1GB,2)) GB"
 # ÉTAPE 1 : Création du vSwitch interne pour le lab
 New-VMSwitch -Name "INT-vSwitch-Lab" -SwitchType Internal
 
-<# ÉTAPE 2 : Création des VMs SRV-HV1 et SRV-HV2 simulant les noeuds du cluster
-   - Ajout de vNICs pour chaque rôle réseau #>
-
-$VMName = "SRV-Test-2"
-$VM = @{
-     Name = $VMName
-     MemoryStartupBytes = 2048MB
-     Generation = 2
-     NewVHDPath = "C:\VirtualMachines\$VMName\$VMName.vhdx"
-     NewVHDSizeBytes = 20GB
-     BootDevice = "VHD"
-     Path = "C:\VirtualMachines\$VMName"
-     SwitchName = (Get-VMSwitch -Name "INT-vSwitch-Lab").Name
-}
-New-VM @VM
-
-# Ajout de vNICs supplémentaires pour simuler les flux
-$roles = @("Management", "Heartbeat", "Migration", "Storage", "VM")
-foreach ($role in $roles) {
-    Add-VMNetworkAdapter -VMName "SRV-HV1" -Name "vNIC-$role" -SwitchName "INT-vSwitch-Lab"
-    Add-VMNetworkAdapter -VMName "SRV-HV2" -Name "vNIC-$role" -SwitchName "INT-vSwitch-Lab"
-}
-
 <# ============================================
 ÉTAPE 3 : Configuration réseau dans les VMs
 - IP statiques sur chaque vNIC
