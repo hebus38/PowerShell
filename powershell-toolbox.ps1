@@ -1,5 +1,60 @@
-# Identification des partitions pour chaque disque:
-Get-Disk | ForEach-Object {
+<#
+.DESCRIPTION
+Récupérer notre configuration IP:
+Setting a Static IP Address – Windows 8 or Newer
+.NOTES
+A finir
+#>
+
+Get-NetIPConfiguration 
+
+$IP = "10.10.10.10"
+$MaskBits = 24 # This means subnet mask = 255.255.255.0
+$Gateway = "10.10.10.1"
+$Dns = "10.10.10.100"
+$IPType = "IPv4"
+# Retrieve the network adapter that you want to configure
+$adapter = Get-NetAdapter | ? {$_.Status -eq "up"}
+# Remove any existing IP, gateway from our ipv4 adapter
+If (($adapter | Get-NetIPConfiguration).IPv4Address.IPAddress) {
+ $adapter | Remove-NetIPAddress -AddressFamily $IPType -Confirm:$false
+}
+If (($adapter | Get-NetIPConfiguration).Ipv4DefaultGateway) {
+ $adapter | Remove-NetRoute -AddressFamily $IPType -Confirm:$false
+}
+ # Configure the IP address and default gateway
+$adapter | New-NetIPAddress `
+ -AddressFamily $IPType `
+ -IPAddress $IP `
+ -PrefixLength $MaskBits `
+ -DefaultGateway $Gateway
+# Configure the DNS client server IP addresses
+$adapter | Set-DnsClientServerAddress -ServerAddresses $DNS
+
+Setting an address with DHCP – Windows 8 or newer
+
+$IPType = "IPv4"
+$adapter = Get-NetAdapter | ? {$_.Status -eq "up"}
+$interface = $adapter | Get-NetIPInterface -AddressFamily $IPType
+If ($interface.Dhcp -eq "Disabled") {
+ # Remove existing gateway
+ If (($interface | Get-NetIPConfiguration).Ipv4DefaultGateway) {
+ $interface | Remove-NetRoute -Confirm:$false
+ }
+ # Enable DHCP
+ $interface | Set-NetIPInterface -DHCP Enabled
+ # Configure the DNS Servers automatically
+ $interface | Set-DnsClientServerAddress -ResetServerAddresses
+}
+
+<#
+.DESCRIPTION 
+Identification des partitions pour chaque disque connecté:
+.LINK
+https://learn.microsoft.com/en-us/powershell/module/storage/get-disk
+https://learn.microsoft.com/en-us/powershell/module/storage/get-partition
+#>
+ Get-Disk | ForEach-Object {
     $diskNum = $_.Number
     Write-Host "`n Disque {0}: $($_.FriendlyName)" -f $diskNum
     Get-Partition -DiskNumber $diskNum | 
