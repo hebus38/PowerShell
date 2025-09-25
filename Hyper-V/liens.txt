@@ -1,0 +1,15 @@
+--- Hyper-V ---
+https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/powershell
+https://learn.microsoft.com/en-us/answers/questions/104521/whats-the-network-recommendations-for-hyper-v-clus
+
+--- Windows 11 deployment ---
+https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/oem-deployment-of-windows-desktop-editions-overview?view=windows-11
+
+KMS Client Product Key:
+https://learn.microsoft.com/en-us/windows-server/get-started/kms-client-activation-keys?tabs=windows1110ltsc%2Cwindows81%2Cserver2025%2Cversion1803#generic-volume-license-keys
+
+--- PowerShell - DSC ---
+https://mikefrobbins.com/2015/01/22/creating-hyper-v-vms-with-desired-state-configuration/
+
+Learning:
+https://www.pluralsight.com/courses/powershell-desired-state-configuration-fundamentals
