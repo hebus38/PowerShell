@@ -144,13 +144,13 @@ if ($VMState -ne "Off") {
 .SYNOPSIS
     Convertit l’adresse MAC délivrée par Hyper-V au format EUI-48 avec séparateur (-), selon la convention Windows.
 .DESCRIPTION
-    Capture dans le groupe $1 chaque paire de caractères '(.{2})' et remplace par '$1:', 
-    élimine le dernier séparateur (-) avec TrimEnd,
-    met en majuscule avec ToUpper.
+    Capture dans le groupe $1 chaque paire de caractères '(.{2})' et remplace par '$1-', 
+    à condition que ce qui suit corresponde (?=...) à au moins deux caractères quelconques .{2,},
+    met en majuscule avec ToUpper().
 #>  
 function Convert-MacToDashFormat {
     param([string]$MAC)
-    return ($MAC -replace '(.{2})(?=.{2,})', '$1-').TrimEnd('-').ToUpper()
+    return ($MAC -replace '(.{2})(?=.{2,})', '$1-').ToUpper()
 }
 
 Write-Progress -Activity "Configuration de ${VMName}" `
