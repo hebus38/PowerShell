@@ -5,7 +5,9 @@ Write-Progress -Activity "Configuration de ${ReplicaServer}" `
 Invoke-Command -VMName $ReplicaServer -Credential $Creds -ScriptBlock {
     try {
         #$server = "SRV-HYP-2"
-        
+        $cert = Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -eq "CN=SRV-HYP-2 - Test 4" }
+        $thumbprint = $cert.Thumbprint
+
         Write-Host "`nConfiguration d'Hyper-V Replica..." -ForegroundColor Cyan
         Set-VMReplicationServer -ReplicationEnabled $true `
             -AllowedAuthenticationType Certificate `
