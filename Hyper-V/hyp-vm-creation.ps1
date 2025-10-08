@@ -21,9 +21,10 @@ New-VMSwitch -Name "EXT-vSwitch-Lab" -SwitchType External -NetAdapterName "Ether
 New-VMSwitch -Name "INT-vSwitch-Lab" -SwitchType Internal
 New-VMSwitch -Name "PRV-vSwitch-Lab" -SwitchType Private
 
-###
-# Création des VMs Hyper-V (SRV-HYP-1 et SRV-HYP-2):
-##
+<#
+.SYNOPSIS
+    Création des VMs Hyper-V (SRV-HYP-1 et SRV-HYP-2):
+#>
 param(
     [Parameter(Mandatory=$true)]
     [string]$VMName # SRV-HYP-1
@@ -79,7 +80,50 @@ catch {
 
 <#
 .SYNOPSIS
-    Création d’une machine virtuelle OPNsense
+    Création d’un contrôleur de domaine
+#>
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$VMName
+)
+$VirtualMachine = @{
+    Name = $VMName
+    MemoryStartupBytes = 2048MB
+    Generation = 2
+    NewVHDPath = "C:\Virtual Machines\$VMName\$VMName.vhdx"
+    NewVHDSizeBytes = 20GB
+    BootDevice = "VHD"
+    Path = "C:\Hyper-V"
+    ErrorAction = "Stop"
+}
+
+try {
+    New-VM @VirtualMachine
+    $NetworkAdapters = @{
+        VMName = $VMName    
+        Name = "vNIC-Management" 
+        SwitchName = "vSwitch-WAN"
+        ErrorAction = "Stop"
+    }
+    Add-VMNetworkAdapter @NetworkAdapters
+
+    
+    Add-VMDvdDrive -VMName $VMName -Path "E:\windows_server_2025.iso"
+    Set-VMFirmware -VMName $VMName -BootOrder @(
+        (Get-VMDvdDrive -VMName $VMName), 
+        (Get-VMHardDiskDrive -VMName $VMName)
+    )
+}
+catch {
+    "`n"
+    Write-Host $PSItem.Exception.Message -ForegroundColor Red
+    Write-Host $PSItem.ScriptStackTrace -ForegroundColor Red
+    "`n"
+}
+
+<#
+.SYNOPSIS
+    Création d’une machine virtuelle Debian
 .LINK
     https://opnsense.org/    
 #>
@@ -90,10 +134,10 @@ param(
 
 $VirtualMachine = @{
     Name = $VMName
-    MemoryStartupBytes = 1024MB  
+    MemoryStartupBytes = 2048MB  
     Generation = 2
     NewVHDPath = "C:\Virtual Machines\$VMName\$VMName.vhdx"
-    NewVHDSizeBytes = 40GB       
+    NewVHDSizeBytes = 20GB       
     BootDevice = "VHD"
     Path = "C:\Hyper-V"
     ErrorAction = "Stop"
@@ -104,7 +148,7 @@ try {
     New-VM @VirtualMachine
     Add-VMNetworkAdapter -VMName $VMName -Name "vNIC-WAN" -SwitchName "vSwitch-WAN" -ErrorAction Stop
     Add-VMNetworkAdapter -VMName $VMName -Name "vNIC-LAN" -SwitchName "vSwitch-LAN" -ErrorAction Stop
-    Add-VMDvdDrive -VMName $VMName -Path "E:\OPNsense-25.7-dvd-amd64.iso"
+    Add-VMDvdDrive -VMName $VMName -Path "C:\ISO\debian-13.1.0-amd64-netinst.iso"
     Set-VMFirmware -VMName $VMName -EnableSecureBoot Off
     Set-VMFirmware -VMName $VMName -BootOrder @(
         (Get-VMDvdDrive -VMName $VMName),

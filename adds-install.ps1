@@ -1,18 +1,21 @@
 <#
+.SYNOPSIS
+  Installation de Active Directory Domain Services
 .LINK
-https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/ad-ds-deployment
+  https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/install-active-directory-domain-services--level-100-
 #>
 
-$pwd = ConvertTo-SecureString "motDEpasse_1" -AsPlainText -Force
-$crd = New-Object System.Management.Automation.PSCredential ("SRV-HYP-1\Administrateur", $pwd)
+$vmname = "SRV-DC-1"
+$psswrd = ConvertTo-SecureString "motDEpasse_1" -AsPlainText -Force
+$crdntl = New-Object System.Management.Automation.PSCredential ("SRV-HYP-1\Administrateur", $psswrd)
 
-Invoke-Command -VMName <...> -Credential $crd {...}
+Invoke-Command -VMName $vmname  -Credential $crdntl {...}
 
 Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
 
 $dsrm = ConvertTo-SecureString "MotDePasseDSRM!" -AsPlainText -Force
 
-(Test-ADDSForestInstallation `)
+#Test-ADDSForestInstallation `
 Install-ADDSForest `
   -DomainName "lothlorien.local" `
   -DomainNetbiosName "LOTHLORIEN" `
@@ -21,11 +24,11 @@ Install-ADDSForest `
   -Force:$true
 
 Install-WindowsFeature -IncludeAllSubFeature -IncludeManagementTools Windows-Server-Backup
-===
+#===
 $params = @{
     Identity = 
         "CN=NTDS Settings," +
-        "CN=LAB-DC1," +
+        "CN=SRV-DC-1," +
         "CN=Servers," +
         "CN=Default-First-Site-Name," +
         "CN=Sites," +
@@ -39,44 +42,16 @@ $params = @{
 }
 
 Set-ADObject @params
-Get-ADDomainController -Filter * | Select Name,IsGlobalCatalog
-===
-Enable-ADOptionalFeature 'Recycle Bin Feature' -Scope ForestOrConfigurationSet -Target "mondomaine.local"
-===
-Stop-Service NTDS -Force
-New-Item -Path "C:\ADCompactpo" -ItemType Directory -Force
+Get-ADDomainController -Filter * | Select-Object Name,IsGlobalCatalog
+#===
+Enable-ADOptionalFeature 'Recycle Bin Feature' -Scope ForestOrConfigurationSet -Target "lothlorien.local"
 
-ntdsutil.exe
-activate instance ntds
-files
-compact to "C:\ADCompact"
-quit
-quit
-=
-Copy-Item -Path "C:\ADCompact\ntds.dit" -Destination "C:\Windows\NTDS\ntds.dit"
-Remove-Item -Path "C:\Windows\NTDS\*.log"
-=
-ntdsutil.exe
-activate instance ntds
-files
-integrity
-quit
-quit
-=
-ntdsutil.exe
-activate instance ntds
-semantic database analysis
-verbose on
-go fixup
-quit
-quit
-===
 Set-ADDomainMode -Identity "lothlorien.local" -DomainMode Windows2016Domain
 Set-ADForestMode -Identity "lothlorien.local" -ForestMode Windows2016Forest
 
-===
-= RODC
-===
+#===
+#= RODC
+#===
 
 New-ADGroup -Name "RODC_Cached_Users" -GroupScope Global -Path "OU=Agents,DC=<...>,DC=local"
 New-ADGroup -Name "RODC_Admins" -GroupScope Global -Path "OU=Admin,DC=<...>,DC=local"
