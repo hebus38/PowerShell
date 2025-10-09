@@ -78,7 +78,7 @@ Get-ADDomainControllerPasswordReplicationPolicy `
   -Identity "RODC01" `
   -AllowedList
 
-===
+<#
 5. 🌐 Déploiement du portail de téléservices
 Serveur web en DMZ (IIS, Apache, Nginx)
 
@@ -90,7 +90,7 @@ Test de connexion avec agent.etatcivil
 ===
 Présence du RODC: Get-ADDomainController -Filter {IsReadOnly -eq $true}
 Réplication: repadmin /showrepl
-
+#>
 
 
 
