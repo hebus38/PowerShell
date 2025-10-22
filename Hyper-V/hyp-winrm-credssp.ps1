@@ -38,10 +38,13 @@ $productKey = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows'
 $featureKey = 'CredentialsDelegation'
 
 if (-not (Test-Path $registryKey)) {
-	New-Item -Path $productKey -Name $featureKey  | Out-Null
-	Write-Host ("La clé '{0}' a bien été créée." -f $featureKey)
+	$params1 = @{
+		Path = $productKey
+		Name = $featureKey
+	}
+	New-Item  @params1 
 } else {
-	Write-Host ("La clé '{0}' est déjà présente." -f $featureKey)
+	Write-Host ("La clé '{0}' existe déjà." -f $featureKey)
 }
 
 # Vérification et création/modification des entrées:
@@ -53,35 +56,57 @@ $entries = @(
 	@{Name = $entry_2; Value = 1; Path = $registryKey}
 )
 foreach ($e in $entries) {
-	$current = Get-ItemProperty -Path $e.Path -Name $e.Name -ErrorAction SilentlyContinue
+	$params2 = @{
+		Path = $e.Path
+		Name = $e.Name		
+	}
+	$current = Get-ItemProperty @params2 -ErrorAction SilentlyContinue
 	if ($null -eq $current) {
-		New-ItemProperty -Path $e.Path -Name $e.Name -PropertyType DWord -Value $e.Value | Out-Null
-		Write-Host ("L’entrée '$($e.Name)' a été créée avec la valeur $($e.Value).")
+		$params3 = @{
+			Path = $e.Path 
+			Name = $e.Name 
+			PropertyType = 'DWord' 
+			Value = $e.Value
+		}
+		New-ItemProperty @params3
 	} elseif ($current.$($e.Name) -ne $e.Value) {
-		Set-ItemProperty -Path $e.Path -Name $e.Name -Value $e.Value
-		Write-Host ("L’entrée '$($e.Name)' a été modifiée avec la valeur $($e.Value).")
+		$params3 = @{
+			Path = $e.Path 
+			Name = $e.Name 
+			PropertyType = 'DWord' 
+			Value = $e.Value
+		}
+		Set-ItemProperty @params3
 	} else {    
 		Write-Host ("L’entrée '$($e.Name)' existe déjà.")
 	}
 }
 
 # Vérification et création de l’entrée spécifique:
-$serverName = 'HYPERV.local'
-
-$subKey = "{0}\{1}" -f $registryKey, $entry_1
-
+$serverName = 'SRV-HYP-1.kashyyyk.local'
+#$subKey = "{0}\{1}" -f $registryKey, $entry_1
 $entryValue = '1'
 $entryData = "wsman/{0}" -f $serverName
 
-$currentData = Get-ItemProperty -Path $subKey -Name $entryValue -ErrorAction SilentlyContinue
+$currentData = Get-ItemProperty -Path $registryKey -Name $entryValue -ErrorAction SilentlyContinue
 if ($null -eq $currentData) {
-	New-ItemProperty -Path $subKey -Name $entryValue -PropertyType String -Value $entryData | Out-Null
-	Write-Host ("La valeur {0} a été créée avec, pour donnée, {1}." -f $entryValue, $entryData)
-} elseif ($currentData.$entryValue -ne $entryData) {
-	Set-ItemProperty -Path $subKey -Name $entryValue -Value $entryData
-	Write-Host ("La valeur {0} a été modifiée avec, pour donnée, {1}." -f $entryValue, $entryData)
+    $params = @{
+        Path = $registryKey
+        Name = $entryValue
+        PropertyType = 'String'
+        Value = $entryData
+    }
+	New-ItemProperty @params 
+} elseif (-not ($currentData.$entryValue -contains $entryData)) { #NE MARCHE PAS
+    $params = @{
+        Path = $registryKey
+        Name = $entryValue
+        PropertyType = 'String'
+        Value = $entryData
+    }    
+	Set-ItemProperty @params
 } else {
-	Write-Host ("L’entrée {0} est déjà configurée." -f $entry_1)
+	Write-Host ("L’entrée {0} est déjà configurée." -f $entry)
 }
 
 Read-Host "Appuyez sur Entrée pour quitter"

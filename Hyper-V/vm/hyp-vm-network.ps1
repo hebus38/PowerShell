@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Configuration réseau des VMs Hyper-V pour migration:
+    Configuration réseau des VMs Hyper-V pour migration.
 #>
-$SecurePassword = ConvertTo-SecureString "motDEpasse_1" -AsPlainText -Force
-$Creds = New-Object System.Management.Automation.PSCredential ("SRV-HYP-1\Administrateur", $SecurePassword)
+$Psswrd = ConvertTo-SecureString "motDEpasse_1" -AsPlainText -Force
+$Crdntl = New-Object System.Management.Automation.PSCredential ("SRV-HYP-1\Administrateur", $Psswrd)
 #$Creds = Get-Credential -Message "Entrez les identifiants de SRV-HYP-1"
 
 <#

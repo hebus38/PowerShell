@@ -1,9 +1,10 @@
 <#
 .LINK
-https://learn.microsoft.com/en-us/powershell/module/hyper-v/new-vm
-
+    https://learn.microsoft.com/en-us/powershell/module/hyper-v/new-vm
+    
 .NOTES
-Invoke-Command -FilePath ".\hyper-v-creation-vm.ps1" -ComputerName "HYPERV" -Credential "HYPERV\Administrateur"
+    Voir:
+    https://learn.microsoft.com/en-us/windows-server/security/guarded-fabric-shielded-vm/guarded-fabric-configuration-scenarios-for-shielded-vms-overview
 #>
 
 ###
@@ -17,9 +18,9 @@ Write-Host "Used memory: $([math]::Round($inUseMemory/1GB,2))GB"
 ###
 # Création des 'vSwitch' pour le lab:
 ##
-New-VMSwitch -Name "EXT-vSwitch-Lab" -SwitchType External -NetAdapterName "Ethernet" -AllowManagementOS $true
-New-VMSwitch -Name "INT-vSwitch-Lab" -SwitchType Internal
-New-VMSwitch -Name "PRV-vSwitch-Lab" -SwitchType Private
+New-VMSwitch -Name "vSwitch-WAN" -SwitchType External -NetAdapterName "Ethernet" -AllowManagementOS $true
+New-VMSwitch -Name "vSwitch-LAN" -SwitchType Internal
+New-VMSwitch -Name "vSwitch-CLU" -SwitchType Private
 
 <#
 .SYNOPSIS
@@ -124,8 +125,6 @@ catch {
 <#
 .SYNOPSIS
     Création d’une machine virtuelle Debian
-.LINK
-    https://opnsense.org/    
 #>
 param(
     [Parameter(Mandatory=$true)]
@@ -148,9 +147,13 @@ try {
     New-VM @VirtualMachine
     Add-VMNetworkAdapter -VMName $VMName -Name "vNIC-WAN" -SwitchName "vSwitch-WAN" -ErrorAction Stop
     Add-VMNetworkAdapter -VMName $VMName -Name "vNIC-LAN" -SwitchName "vSwitch-LAN" -ErrorAction Stop
-    Add-VMDvdDrive -VMName $VMName -Path "C:\ISO\debian-13.1.0-amd64-netinst.iso"
-    Set-VMFirmware -VMName $VMName -EnableSecureBoot Off
-    Set-VMFirmware -VMName $VMName -BootOrder @(
+    Add-VMDvdDrive -VMName $VMName `
+        -Path "C:\ISO\debian-13.1.0-amd64-netinst.iso"
+    
+    Set-VMFirmware -VMName $VMName -EnableSecureBoot On `
+        -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
+    
+        Set-VMFirmware -VMName $VMName -BootOrder @(
         (Get-VMDvdDrive -VMName $VMName),
         (Get-VMHardDiskDrive -VMName $VMName)
     )
