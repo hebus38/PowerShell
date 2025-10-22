@@ -108,6 +108,8 @@ catch {
 ##
 
 <#
+.DESCRIPTION
+    Création d’un cluster Hyper-V
 .LINK
     https://learn.microsoft.com/en-us/powershell/module/hyper-v/start-vmfailover?view=windowsserver2025-ps
 #>
