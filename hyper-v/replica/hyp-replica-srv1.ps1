@@ -125,7 +125,10 @@ Start-VMFailover -VMName $VM -ComputerName $Replica
 Set-VMReplication -Reverse -VMName $VM -ComputerName $Replica
 
 Start-VM -VMName $VM -ComputerName $Replica
-
+<#
+logs:
+Microsoft-Windows-Hyper-V-VMMS-Admin
+#>==
 
 
 

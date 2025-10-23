@@ -1,10 +1,8 @@
 <#
 .SYNOPSIS
-
     Mise en oeuvre de Hyper-V Replica.
 
 .DESCRIPTION
-
     Hyper-V Replica fournit la réplique d’une VM exécutée sur un hôte Hyper-V pouvant être stockée et 
     mise à jour sur un autre hôte Hyper-V. La réplication est asynchrone (lagged copy) et aucun stockage 
     partagé n’est nécessaire.
